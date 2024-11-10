@@ -1,9 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 
-const {CatFileCommand} = require('./src/commands')
-
-console.error("Logs from your program will appear here!");
+const { CatFileCommand, HashObjectCommand } = require('./src/commands')
 
 const command = process.argv[2];
 
@@ -13,6 +11,9 @@ switch (command) {
     break;
   case "cat-file":
     handleCatFileCommand();
+    break;
+  case "hash-object":
+    handleHashObjectCommand();
     break;
   default:
     throw new Error(`Unknown command ${command}`);
@@ -29,10 +30,23 @@ function createGitDirectory() {
 
 function handleCatFileCommand() {
   const flags = process.argv[3];
-  const commitHash = process.argv[4];
+  const commitSHA_Hash = process.argv[4];
 
-  const catFileCommand = new CatFileCommand(flags, commitHash);
+  const catFileCommand = new CatFileCommand(flags, commitSHA_Hash);
   catFileCommand.execute();
 
+}
+
+function handleHashObjectCommand() {
+  let flags = process.argv[3];
+  let filePath = process.argv[4];
+
+  if (!filePath) {
+    filePath = flags;
+    flags = null;
+  }
+
+  const hashObjectCommand = new HashObjectCommand(flags, filePath);
+  hashObjectCommand.execute()
 }
 

@@ -3,16 +3,16 @@ const fs = require("fs");
 const zlib = require('zlib');
 
 class CatFileCommand {
-    constructor(flags, commitHash) {
+    constructor(flags, commitSHA_Hash) {
         // flags can be: -p, -t and -s
         this.flags = flags;
-        this.commitHash = commitHash;
+        this.commitSHA_Hash = commitSHA_Hash;
     }
 
     execute() {
         /*steps:
-        1. Navigate to: .git/objects/commitHash[0..2]
-        2. Read the file from that directory: commitHash[2....end]
+        1. Navigate to: .git/objects/commitSHA_Hash[0..2]
+        2. Read the file from that directory: commitSHA_Hash[2....end]
         3. Decompress the contents using ZLib
         4. Extract actual content from decompressed data and print the content
         */
@@ -20,15 +20,15 @@ class CatFileCommand {
         switch (this.flags) {
             case "-p":
                 {
-                    const folderName = this.commitHash.slice(0,2);
-                    const fileName = this.commitHash.slice(2);
+                    const folderName = this.commitSHA_Hash.slice(0,2);
+                    const fileName = this.commitSHA_Hash.slice(2);
 
                     const completePath = path.join(process.cwd(), ".git", "objects", folderName, fileName);
 
                     // checking if the file exists or not and throwing error
 
                     if(!fs. existsSync(completePath)){
-                        throw new Error(`Not a valid object name ${this.commitHash}`)
+                        throw new Error(`Not a valid object name ${this.commitSHA_Hash}`)
                     }
 
                     const compressedFileContents = fs.readFileSync(completePath);
