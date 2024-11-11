@@ -9,7 +9,7 @@ class HashObjectCommand{
         this.filePath = filePath;
     }
 
-    execute(){
+    run(){
         // checking if the file exists or not 
         // for this.filePath: index.js, filepath is: C:\Users\LEGION\Desktop\End\codecrafters-git-javascript\index.js 
         const filePath = path.resolve(this.filePath);
