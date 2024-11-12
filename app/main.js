@@ -1,7 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 
-const { CatFileCommand, HashObjectCommand, LsTreeCommand } = require('./src/commands')
+const { CatFileCommand, HashObjectCommand, LsTreeCommand, WriteTreeCommand } = require('./src/commands')
 
 const command = process.argv[2];
 
@@ -17,6 +17,9 @@ switch (command) {
     break;
   case "ls-tree":
     handleLsTreeCommand();
+    break;
+  case "write-tree":
+    handleWriteTreeCommand();
     break;
   default:
     throw new Error(`Unknown command ${command}`);
@@ -75,7 +78,13 @@ function handleLsTreeCommand(){
 
   const lstreeCommand = new LsTreeCommand(flags, treeSHA);
   lstreeCommand.run();
-
 }
+
+function handleWriteTreeCommand(){
+  
+  const writeTreeCommand = new WriteTreeCommand();
+  writeTreeCommand.run();
+};
+
 
 

@@ -29,10 +29,10 @@ class LsTreeCommand {
 
         // Actual content of the tree, splitted based on null character
         const fileContents = outputBuffer.toString().split("\0");
-
+        
         // parsing the content of the file
         const treeNames = fileContents.slice(1).filter(value => value.includes(" "));
-        const names = treeNames.map(value=>value.split(" ")[1]).sort();
+        const names = treeNames.map(value=>value.split(" ")[1]).filter(item=>isNaN(item));
 
         // printing the tree names
         names.forEach(name => {
