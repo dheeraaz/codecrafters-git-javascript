@@ -2,7 +2,6 @@ const fs = require('fs');
 const path = require("path");
 const crypto = require("crypto");
 const zlib = require("zlib");
-const { buffer } = require('stream/consumers');
 
 class WriteTreeCommand {
     run() {
@@ -24,7 +23,7 @@ class WriteTreeCommand {
                     const treehash = this.createTreeForPath(currentPath);
 
                     if (treehash) {
-                        return { mode: "4000", basename: path.basename(currentPath), hash: treehash }
+                        return { mode: "40000", basename: path.basename(currentPath), hash: treehash }
                     } else {
                         return null;
                     }

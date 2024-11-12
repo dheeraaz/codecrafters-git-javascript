@@ -47,6 +47,7 @@ class CatFileCommand {
 
         const compressedFileContents = fs.readFileSync(completePath);
         const outputBuffer = zlib.inflateSync(compressedFileContents);
+
         // just removing \n from the output before returning the original content of the file 
         return outputBuffer.toString().split("\x00")[1];
     }
