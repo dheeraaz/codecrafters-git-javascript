@@ -24,9 +24,7 @@ class WriteTreeCommand {
 
                     if (treehash) {
                         return { mode: "40000", basename: path.basename(currentPath), hash: treehash }
-                    } else {
-                        return null;
-                    }
+                    } 
                 } else if (stat.isFile()) {
                     const fileHash = this.writeFileAsBlob(currentPath);
 
