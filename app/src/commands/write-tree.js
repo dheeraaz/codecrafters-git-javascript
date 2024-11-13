@@ -48,18 +48,7 @@ class WriteTreeCommand {
 
         const hash = crypto.createHash('sha1').update(tree).digest('hex');
 
-        const folderName = hash.slice(0, 2);
-        const fileName = hash.slice(2);
-
-        const treeFolderPath = path.join(process.cwd(), ".git", "objects", folderName);
-
-        if (!fs.existsSync(treeFolderPath)) {
-            fs.mkdirSync(treeFolderPath);
-        }
-
-        const compressedFileContents = zlib.deflateSync(tree);
-
-        fs.writeFileSync(path.join(treeFolderPath, fileName), compressedFileContents);
+        this.saveFileAsBlobFromHash(hash, tree);
 
         return hash;
     }
