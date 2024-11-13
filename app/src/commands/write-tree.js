@@ -31,17 +31,17 @@ class WriteTreeCommand {
                     return { mode: "100644", basename: path.basename(currentPath), hash: fileHash };
                 }
             })
-            .sort((a, b) => a.basename.localeCompare(b.basename));
+            // .sort((a, b) => a.basename.localeCompare(b.basename));
 
         // not tracking empty directory
         if (dirContent.length === 0 || entries.length === 0) return null;
 
-        const treeData = entries.reduce((accumulator, currentObject)=>{
-            const {mode, basename, hash} = currentObject;
+        const treeData = entries.reduce((accumulator, currentObject) => {
+            const { mode, basename, hash } = currentObject;
 
             return Buffer.concat([accumulator, Buffer.from(`${mode} ${basename}\0`), Buffer.from(hash, "hex")]);
         }, Buffer.alloc(0))
- 
+
         const tree = Buffer.from([Buffer.from(`tree ${treeData.length}\0`), treeData]);
 
         const finalTreeHash = crypto.createHash('sha1').update(tree).digest('hex');
