@@ -3,92 +3,93 @@ const path = require("path");
 const crypto = require("crypto");
 const zlib = require("zlib");
 
-class WriteTreeCommand {
-    run() {
-        const treeHash = this.createTreeForPath(process.cwd());
-        process.stdout.write(treeHash);
+function writeFIleBlob(currentPath) {
+
+    const contents = fs.readFileSync(currentPath);
+    const len = contents.length;
+
+    const header = `blob ${len}\0`;
+    const blob = Buffer.concat([Buffer.from(header), contents]);
+
+    const hash = crypto.createHash("sha1").update(blob).digest("hex");
+
+    const folderName = hash.slice(0, 2);
+    const fileName = hash.slice(2);
+
+    const completeFolderPath = path.join(process.cwd(), ".git", "objects", folderName);
+
+    if (!fs.existsSync(completeFolderPath)) {
+        fs.mkdirSync(completeFolderPath);
     }
 
-    createTreeForPath(basePath) {
-        const dirContent = fs.readdirSync(basePath);
+    const compressedFileContents = zlib.deflateSync(blob);
 
-        const entries = dirContent
-            .filter((fileOrFolder) => fileOrFolder !== ".git")
-            .map((fileOrFolder) => {
-                const currentPath = path.join(basePath, fileOrFolder);
-                // statSync returns stats related to file or folder
-                const stat = fs.statSync(currentPath);
+    fs.writeFileSync(path.join(completeFolderPath, fileName), compressedFileContents);
+
+    return hash;
+}
+
+class WriteTreeCommand {
+
+    run() {
+
+        function recursiveCreateTree(basePath) {
+            const dirContents = fs.readdirSync(basePath);
+
+            const result = [];
+
+            for (const dirContent of dirContents) {
+                // skipping .git folder
+                if (dirContent.includes(".git")) continue;
+
+                const currentPath = path.join(basePath, dirContent);
+
+                const stat = fs.statSync(currentPath)
 
                 if (stat.isDirectory()) {
-                    const treehash = this.createTreeForPath(currentPath);
-
-                    if (treehash) {
-                        return { mode: "40000", basename: path.basename(currentPath), hash: treehash }
+                    const sha = recursiveCreateTree(currentPath);
+                    if (sha) {
+                        result.push({ mode: "40000", basename: path.basename(currentPath), sha })
                     }
                 } else if (stat.isFile()) {
-                    const fileHash = this.writeFileAsBlob(currentPath);
+                    const sha = writeFIleBlob(currentPath);
 
-                    return { mode: "100644", basename: path.basename(currentPath), hash: fileHash };
+                    result.push({ mode: "100644", basename: path.basename(currentPath), sha })
                 }
-            })
-            // .sort((a, b) => a.basename.localeCompare(b.basename));
 
-        // not tracking empty directory
-        if (dirContent.length === 0 || entries.length === 0) return null;
+            }
 
-        const treeData = entries.reduce((accumulator, currentObject) => {
-            const { mode, basename, hash } = currentObject;
+            if (dirContents.length === 0 || result.length === 0) return null;
 
-            return Buffer.concat([accumulator, Buffer.from(`${mode} ${basename}\0`), Buffer.from(hash, "hex")]);
-        }, Buffer.alloc(0))
+            const treeData = result.reduce((acc, current) => {
+                const { mode, basename, sha } = current;
 
-        const tree = Buffer.from([Buffer.from(`tree ${treeData.length}\0`), treeData]);
+                return Buffer.concat([acc, Buffer.from(`${mode} ${basename}\0`), Buffer.from(sha, 'hex')]);
+            }, Buffer.alloc(0))
 
-        const finalTreeHash = crypto.createHash('sha1').update(tree).digest('hex');
+            const tree = Buffer.concat([Buffer.from(`tree ${treeData.length}\0`), treeData]);
 
-        const folderName = finalTreeHash.slice(0, 2);
-        const fileName = finalTreeHash.slice(2);
+            const hash = crypto.createHash('sha1').update(tree).digest('hex');
 
-        const treeFolderPath = path.join(process.cwd(), ".git", "objects", folderName);
+            const folderName = hash.slice(0, 2);
+            const fileName = hash.slice(2);
 
-        if (!fs.existsSync(treeFolderPath)) {
-            fs.mkdirSync(treeFolderPath, { recursive: true });
+            const treeFolderPath = path.join(process.cwd(), ".git", "objects", folderName);
+
+            if (!fs.existsSync(treeFolderPath)) {
+                fs.mkdirSync(treeFolderPath);
+            }
+
+            const compressedFileContents = zlib.deflateSync(tree);
+
+            fs.writeFileSync(path.join(treeFolderPath, fileName), compressedFileContents);
+
+            return hash;
         }
 
-        const compressedFileContents = zlib.deflateSync(tree);
-        fs.writeFileSync(path.join(treeFolderPath, fileName), compressedFileContents);
+        const sha = recursiveCreateTree(process.cwd());
+        process.stdout.write(sha);
 
-        return finalTreeHash;
-    }
-
-    writeFileAsBlob(filePath) {
-        // read the content and length of file
-        const fileContents = fs.readFileSync(filePath); //here, fileContents is in Buffer Format
-        const fileContentsLength = fileContents.length;
-
-        // create the blob object: blob <size>\0<content> and also 
-        const blobPart = `blob ${fileContentsLength}\0`;
-        const blobObject = Buffer.concat([Buffer.from(blobPart), fileContents]);
-
-        // create the file as: .git/objects/fileHash[0..2]/fileHash[2..end] 
-        // Then compress the fileContents, and write into that file
-
-        // calculate/find the hash of blobObject
-        const fileHash = crypto.createHash('sha1').update(blobObject).digest("hex");
-
-        const folderName = fileHash.slice(0, 2);
-        const fileName = fileHash.slice(2);
-
-        const completeFolderPath = path.join(process.cwd(), ".git", "objects", folderName);
-
-        if (!fs.existsSync(completeFolderPath)) {
-            fs.mkdirSync(completeFolderPath, { recursive: true });
-        }
-
-        const compressedFileContents = zlib.deflateSync(blobObject);
-        fs.writeFileSync(path.join(completeFolderPath, fileName), compressedFileContents);
-
-        return fileHash;
     }
 
 }
