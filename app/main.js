@@ -1,7 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 
-const { CatFileCommand, HashObjectCommand, LsTreeCommand, WriteTreeCommand } = require('./src/commands')
+const { CatFileCommand, HashObjectCommand, LsTreeCommand, WriteTreeCommand, CommitTreeCommand } = require('./src/commands')
 
 const command = process.argv[2];
 
@@ -20,6 +20,9 @@ switch (command) {
     break;
   case "write-tree":
     handleWriteTreeCommand();
+    break;
+  case "commit-tree":
+    handleCommitTreeCommand();
     break;
   default:
     throw new Error(`Unknown command ${command}`);
@@ -84,6 +87,16 @@ function handleWriteTreeCommand(){
   const writeTreeCommand = new WriteTreeCommand();
   writeTreeCommand.run();
 };
+
+function handleCommitTreeCommand(){
+  const treeSHA = process.argv[3];
+  const commitSHA = process.argv[5];
+  const commitMessage = process.argv[7];
+
+  const commitTreeCommand = new CommitTreeCommand(treeSHA, commitSHA, commitMessage);
+  commitTreeCommand.run();
+};
+
 
 
 
