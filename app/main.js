@@ -81,7 +81,6 @@ function handleLsTreeCommand(){
 }
 
 function handleWriteTreeCommand(){
-  
   const writeTreeCommand = new WriteTreeCommand();
   writeTreeCommand.run();
 };
