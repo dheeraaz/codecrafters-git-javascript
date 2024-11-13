@@ -71,7 +71,7 @@ class WriteTreeCommand {
         const blobHeader = `blob ${len}\0`;
         const blobObject = Buffer.concat([Buffer.from(blobHeader), contents]);
 
-        const hash = crypto.createHash("sha1").update(blob).digest("hex");
+        const hash = crypto.createHash("sha1").update(blobObject).digest("hex");
 
         this.saveFileAsBlobFromHash(hash, blobObject)
         return hash;
