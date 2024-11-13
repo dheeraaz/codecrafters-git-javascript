@@ -22,7 +22,7 @@ class WriteTreeCommand {
 
                 if (stat.isDirectory()) {
                     const treeHash = this.recursiveCreateTree(currentPath);
-                    if (sha) {
+                    if (treeHash) {
                         return { mode: "40000", basename: path.basename(currentPath), sha: treeHash };
                     }
                 } else if (stat.isFile()) {
