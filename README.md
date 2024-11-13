@@ -18,39 +18,105 @@ commits, trees etc.) and more.
 - `git hash-object -w <filepath>`
 - `git ls-tree <tree_SHA> || git ls-tree --name-only <tree_SHA>`
 - `git write-tree`
-- `git commit-tree <tree_sha> -p <commit_sha> -m <message>`
+- `git commit-tree <tree_sha> -p <Parent_commit_sha> -m <message>`
 
-# Stage 2 & beyond
+# Resources Followed:
+Along with the instructions provided in the codecrafters challenge, following are the resources followed to complete this project:
+- Reference1 : https://blog.meain.io/2023/what-is-in-dot-git/
+- Reference2 : https://git-scm.com/book/en/v2/Git-Internals-Git-Objects
 
-Note: This section is for stages 2 and beyond.
+# Installation and Setup || Testing Locally
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/dheeraaz/codecrafters-git-javascript.git
+   
+2. **Navigate to the project directory:**
+   ``` bash
+   cd codecrafters-git-javascript
+   
+3. **`init` command**:
+   
+   ``` bash
+   node .\app\main.js init
+   
+4. **`cat-file -p <commit_SHA>` or `cat-file -s <commit_SHA>` command**
 
-1. Ensure you have `node (21)` installed locally
-1. Run `./your_program.sh` to run your Git implementation, which is implemented
-   in `app/main.js`.
-1. Commit your changes and run `git push origin master` to submit your solution
-   to CodeCrafters. Test output will be streamed to your terminal.
+   First, make an empty commit  
+   ```bash
+   git add .
+   git commit --allow-empty -m 'test'
+   ```
+   Then copy the <commit_SHA of test> by using `git log` command
+   ```bash
+   git log
+   ```
+   Now read the blob object as
+   ``` bash
+   node .\app\main.js cat-file -p <commit_SHA of test>
+   ```
+   Or, for size of file
+   ``` bash
+   node .\app\main.js cat-file -s <commit_SHA of test>
+   ```
 
-# Testing locally
+5. **`hash-object <filepath>` or `hash-object -w <filepath>>` command**
 
-The `your_program.sh` script is expected to operate on the `.git` folder inside
-the current working directory. If you're running this inside the root of this
-repository, you might end up accidentally damaging your repository's `.git`
-folder.
+   For computing the SHA hash of a Git object, say for package.json [this will not write the file]  
+   ```bash
+   node .\app\main.js hash-object .\package.json
+   ```
+   When used with the -w flag, it also writes the object to the .git/objects directory.
+   ```bash
+   node .\app\main.js hash-object -w .\package.json
+   ```
+   **PS**: This will create the file as: .git/objects/fileSHA[0..2]/fileSHA[2....end]
+   
+6. **`write-tree` command**
 
-We suggest executing `your_program.sh` in a different folder when testing
-locally. For example:
+   This command will return the tree SHA as well as writes the tree object into .git/objects directory  
+   ```bash
+   node .\app\main.js write-tree 
+   ```
+   
+7. **`ls-tree <tree_SHA>` || `ls-tree --name-only <tree_SHA>` command**
 
-```sh
-mkdir -p /tmp/testing && cd /tmp/testing
-/path/to/your/repo/your_program.sh init
-```
+   #### Note: whether --name-only flag is passed or not, the output is always equivalent to ls-tree --name-only command
 
-To make this easier to type out, you could add a
-[shell alias](https://shapeshed.com/unix-alias/):
-
-```sh
-alias mygit=/path/to/your/repo/your_program.sh
-
-mkdir -p /tmp/testing && cd /tmp/testing
-mygit init
-```
+   #### First find and copy the SHA of tree, for that use
+   ```bash
+   node .\app\main.js write-tree 
+   ```
+   
+8. **`commit-tree <tree_sha> -p <Parent_commit_sha> -m <message>` command**
+   Create a tree, get its SHA
+   ``` bash
+   echo "hello world" > sample.txt
+   git add sample.txt
+   git write-tree
+   1723393b4898695515ac61d7c2a1f8bdbcd55ecd
+   ```
+   Create the initial commit
+   ``` bash
+   git commit-tree 1723393b4898695515ac61d7c2a1f8bdbcd55ecd -m "Initial Commit"
+   f872e9f1c3fe061753f9924649d6603c267279b6
+   ```
+   Write some changes, get another tree SHA
+   ``` bash
+   echo "hello world 2" > sample.txt
+   git add sample.txt
+   git write-tree
+   924a66aa3389d928836a7bd80b2e631736d81d47
+   ```
+   Create a **new commit** with the **new tree SHA**
+   ``` bash
+   node .\app\main.js commit-tree 924a66aa3389d928836a7bd80b2e631736d81d47 -p f872e9f1c3fe061753f9924649d6603c267279b6 -m "Second Commit"
+   86e88f2834c1be7af07f5f34b23e2bd387fc63f6
+   ```
+   To verify this commit, run this command:
+   ``` bash
+   node .\app\main.js cat-file -p 86e88f2834c1be7af07f5f34b23e2bd387fc63f6
+   ```
+   
+  
+   
+   
