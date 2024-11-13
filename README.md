@@ -1,27 +1,24 @@
 [![progress-banner](https://backend.codecrafters.io/progress/git/d8852c51-d735-45b6-bc80-81b2ed5906bc)](https://app.codecrafters.io/users/codecrafters-bot?r=2qF)
 
-This is a starting point for JavaScript solutions to the
+This is a JavaScript solutions to the
 ["Build Your Own Git" Challenge](https://codecrafters.io/challenges/git).
 
-In this challenge, you'll build a small Git implementation that's capable of
-initializing a repository, creating commits and cloning a public repository.
-Along the way we'll learn about the `.git` directory, Git objects (blobs,
-commits, trees etc.), Git's transfer protocols and more.
+In this challenge, I have built a small Git implementation that's capable of
+initializing a repository and creating the commits.
+Along the way I learnt about the `.git` directory, Git objects (blobs,
+commits, trees etc.) and more.
 
-**Note**: If you're viewing this repo on GitHub, head over to
-[codecrafters.io](https://codecrafters.io) to try the challenge.
+**Note**: To try this challenge, head over to [codecrafters.io](https://codecrafters.io) 
 
-# Passing the first stage
-
-The entry point for your Git implementation is in `app/main.js`. Study and
-uncomment the relevant code, and push your changes to pass the first stage:
-
-```sh
-git commit -am "pass 1st stage" # any msg
-git push origin master
-```
-
-That's all!
+# Commands Implemented
+- `git init`
+- `git cat-file -p <commit_SHA>`
+- `git cat-file -s <commit_SHA>`
+- `git hash-object <filepath>`
+- `git hash-object -w <filepath>`
+- `git ls-tree <tree_SHA> || git ls-tree --name-only <tree_SHA>`
+- `git write-tree`
+- `git commit-tree <tree_sha> -p <commit_sha> -m <message>`
 
 # Stage 2 & beyond
 
