@@ -80,14 +80,19 @@ Along with the instructions provided in the codecrafters challenge, following ar
    
 7. **`ls-tree <tree_SHA>` || `ls-tree --name-only <tree_SHA>` command**
 
-   #### Note: whether --name-only flag is passed or not, the output is always equivalent to ls-tree --name-only command
+   Note: whether --name-only flag is passed or not, the output is always equivalent to ls-tree --name-only command
 
-   #### First find and copy the SHA of tree, for that use
+   First find and copy the SHA of tree, for that use
    ```bash
    node .\app\main.js write-tree 
    ```
+   After that run this command for ls tree
+   ``` bash
+   node .\app\main.js ls-tree <tree_SHA>
+   ```
    
 8. **`commit-tree <tree_sha> -p <Parent_commit_sha> -m <message>` command**
+   </br>   
    Create a tree, get its SHA
    ``` bash
    echo "hello world" > sample.txt
