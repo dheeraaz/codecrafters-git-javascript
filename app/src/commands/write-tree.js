@@ -13,35 +13,32 @@ class WriteTreeCommand {
     recursiveCreateTree(basePath) {
         const dirContents = fs.readdirSync(basePath);
 
-        const result = [];
+        const result = dirContents
+            .filter((fileOrFolder) => fileOrFolder !== ".git") //skipping .git folder
+            .map((fileOrFolder) => {
+                const currentPath = path.join(basePath, fileOrFolder);
+                // statSync returns stats related to file or folder
+                const stat = fs.statSync(currentPath);
 
-        for (const dirContent of dirContents) {
-            // skipping .git folder
-            if (dirContent.includes(".git")) continue;
-
-            const currentPath = path.join(basePath, dirContent);
-
-            const stat = fs.statSync(currentPath)
-
-            if (stat.isDirectory()) {
-                const sha = this.recursiveCreateTree(currentPath);
-                if (sha) {
-                    result.push({ mode: "40000", basename: path.basename(currentPath), sha })
+                if (stat.isDirectory()) {
+                    const treeHash = this.recursiveCreateTree(currentPath);
+                    if (sha) {
+                        return { mode: "40000", basename: path.basename(currentPath), sha: treeHash };
+                    }
+                } else if (stat.isFile()) {
+                    const fileHash = this.writeFIleAsBlob(currentPath);
+                    return { mode: "100644", basename: path.basename(currentPath), sha: fileHash }
                 }
-            } else if (stat.isFile()) {
-                const sha = this.writeFIleAsBlob(currentPath);
+            })
+            .sort((a, b) => a.basename.localeCompare(b.basename));
 
-                result.push({ mode: "100644", basename: path.basename(currentPath), sha })
-            }
-
-        }
-
+        // skipping empty directory
         if (dirContents.length === 0 || result.length === 0) return null;
 
-        const treeData = result.reduce((acc, current) => {
-            const { mode, basename, sha } = current;
+        const treeData = result.reduce((accumulator, currentObject) => {
+            const { mode, basename, sha } = currentObject;
 
-            return Buffer.concat([acc, Buffer.from(`${mode} ${basename}\0`), Buffer.from(sha, 'hex')]);
+            return Buffer.concat([accumulator, Buffer.from(`${mode} ${basename}\0`), Buffer.from(sha, 'hex')]);
         }, Buffer.alloc(0))
 
         const tree = Buffer.concat([Buffer.from(`tree ${treeData.length}\0`), treeData]);
@@ -54,11 +51,11 @@ class WriteTreeCommand {
     }
 
     writeFIleAsBlob(currentPath) {
-        const contents = fs.readFileSync(currentPath);
-        const len = contents.length;
+        const fileContents = fs.readFileSync(currentPath);
+        const fileContentsLength = fileContents.length;
 
-        const blobHeader = `blob ${len}\0`;
-        const blobObject = Buffer.concat([Buffer.from(blobHeader), contents]);
+        const blobHeader = `blob ${fileContentsLength}\0`;
+        const blobObject = Buffer.concat([Buffer.from(blobHeader), fileContents]);
 
         const hash = crypto.createHash("sha1").update(blobObject).digest("hex");
 
