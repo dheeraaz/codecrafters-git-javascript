@@ -65,29 +65,29 @@ class WriteTreeCommand {
     }
 
     writeFIleAsBlob(currentPath) {
-
         const contents = fs.readFileSync(currentPath);
         const len = contents.length;
 
-        const header = `blob ${len}\0`;
-        const blob = Buffer.concat([Buffer.from(header), contents]);
+        const blobHeader = `blob ${len}\0`;
+        const blobObject = Buffer.concat([Buffer.from(blobHeader), contents]);
 
         const hash = crypto.createHash("sha1").update(blob).digest("hex");
 
+        this.saveFileAsBlobFromHash(hash, blobObject)
+        return hash;
+    }
+
+    saveFileAsBlobFromHash(hash, data) {
         const folderName = hash.slice(0, 2);
         const fileName = hash.slice(2);
 
         const completeFolderPath = path.join(process.cwd(), ".git", "objects", folderName);
 
-        if (!fs.existsSync(completeFolderPath)) {
-            fs.mkdirSync(completeFolderPath);
-        }
+        if (!fs.existsSync(completeFolderPath)) fs.mkdirSync(completeFolderPath);
 
-        const compressedFileContents = zlib.deflateSync(blob);
+        const compressedFileContents = zlib.deflateSync(data);
 
         fs.writeFileSync(path.join(completeFolderPath, fileName), compressedFileContents);
-
-        return hash;
     }
 
 }
